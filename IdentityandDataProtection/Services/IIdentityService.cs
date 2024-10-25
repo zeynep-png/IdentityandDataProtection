@@ -7,5 +7,6 @@ namespace IdentityandDataProtection.Services
     {
         Task<ServiceMessage> AddUser(AddIdentityDto user);
 
+        Task<ServiceMessage<UserInfoDto>> LoginUser (LoginUserDto user);
     }
 }

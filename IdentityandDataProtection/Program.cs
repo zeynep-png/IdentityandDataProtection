@@ -1,8 +1,12 @@
 using IdentityandDataProtection.Context;
 using IdentityandDataProtection.Managers;
 using IdentityandDataProtection.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Principal;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +16,29 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new
+        Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt: Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt: Audience"],
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes
+            (builder.Configuration["Jwt:SecretKey"]!))
+        };
+    });
+
 var cn = builder.Configuration.GetConnectionString("default");
 builder.Services.AddDbContext<IdentityandDataProtectionDbContext>(options => options.UseSqlServer(cn));
 
 builder.Services.AddScoped<IIdentityService, IdentityManager>();
+
+
 
 var app = builder.Build();
 
@@ -27,7 +50,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

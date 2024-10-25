@@ -13,5 +13,11 @@ namespace IdentityandDataProtection.Entities
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
+        public UserType Role { get; set; }
+
+    }
+    public enum UserType
+    {
+        User,Admin
     }
 }
